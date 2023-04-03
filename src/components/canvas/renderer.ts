@@ -8,6 +8,9 @@ const COLORS = {
 const doodleImages = new Image();
 doodleImages.src = "Sprite Sheet.png"
 
+const doodleBackground = new Image();
+doodleBackground.src = "background.png"
+
 const clear = (ctx: CanvasRenderingContext2D) => {
   const { height, width } = ctx.canvas
   ctx.fillStyle = 'white'
@@ -31,9 +34,20 @@ const drawDoodle = (
   ctx.fill()
 }
 
+const drawBackground = (
+  ctx: CanvasRenderingContext2D
+) => {
+  const { height, width } = ctx.canvas
+  ctx.beginPath()
+  ctx.drawImage(doodleBackground, 0, 0, width, height)
+  ctx.fill()
+}
+
 export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   clear(ctx)
+  drawBackground(ctx)
   drawDoodle(ctx, state.doodle.coord)
+  
 
   state.platforms.forEach(plat => 
     drawGreenPlatform(ctx, {x: plat.x, y: plat.y})

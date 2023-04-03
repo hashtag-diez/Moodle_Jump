@@ -26,13 +26,24 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       direction: null,
     },
     size: { height, width },
-    platforms: new Array(4).fill(0).map((v,i) => ({
-      x: ((i+1)%2 +1)*200,
-      y: height-i*220,
-      dx: 0,
-      dy: 0,
+    platforms: new Array(6).fill(0).map((v,i) => {
+      if (i > 0){
+        return{
+          x: ((i+1)%2 +1)*200 + Math.floor(Math.random() * (200 - 0 + 1)) + 0,
+          y: height-i*220,
+          dx: 0,
+          dy: 0,
+        };
+      } else {
+        return {
+          x: ((i+1)%2 +1)*200,
+          y: height-i*220,
+          dx: 0,
+          dy: 0,
+        }
+      }
     }
-    ))
+    )
   }
 
   const ref = useRef<any>()
