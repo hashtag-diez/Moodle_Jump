@@ -41,8 +41,8 @@ const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean, plat_tou
     coord.dx = (coord.dx > 0 ? (coord.dx - 0.15 < 0 ? 0 : coord.dx - 0.15) : (coord.dx + 0.15 > 0 ? 0 : coord.dx + 0.15))
   } else {
     coord.dx = (
-      doo.direction == "LEFT" ? coord.dx - 0.1 :
-        (doo.direction == "RIGHT" ? coord.dx + 0.1 :
+      doo.direction == "LEFT" ? coord.dx - 0.12 :
+        (doo.direction == "RIGHT" ? coord.dx + 0.12 :
           coord.dx
         )
     )
@@ -51,10 +51,10 @@ const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean, plat_tou
 }
 const iterateOnPlatforms = (scroll: Scroll, plats: Array<Coord>, height: number) => {
   let { id_touched, doScroll, savedDy} = scroll
-  if (id_touched!= -1 && plats[id_touched].y <= height - 100 && plats[id_touched].y + 7 >= height - 100) {
-    console.log("Tac")
+  if (id_touched != -1 && plats[id_touched].y <= height - 100 && plats[id_touched].y + 7 >= height - 100) {
+    // console.log("Tac")
     doScroll = false
-  }
+  } 
   plats.map(plat => {
     plat.dy = (doScroll && id_touched >= 0 ? 7 : 0)
     plat.y = plat.y + plat.dy
@@ -64,11 +64,9 @@ const iterateOnPlatforms = (scroll: Scroll, plats: Array<Coord>, height: number)
 
 const teleportation = (state:State) => {
   if (state.doodle.coord.x  >= state.size.width){
-    console.log("Bord droit")
     state.doodle.coord.x = 0
   }
   else if (state.doodle.coord.x <= 0){
-    console.log("Bord gauche")
     state.doodle.coord.x = state.size.width
   }
   return {
@@ -85,7 +83,8 @@ export const step = (state: State) => {
       state.scroll.id_touched = (state.platforms[i].y + 7 >= state.size.height - 60 ? state.scroll.id_touched : i)
     }
   })
-  if (state.scroll.id_touched != -1 && state.scroll.savedDy/2 < state.doodle.coord.dy + 0.15 && state.scroll.savedDy/2 > state.doodle.coord.dy) {
+  // FIXME pq && state.scroll.savedDy/2 > state.doodle.coord.dy) ? 
+  if (state.scroll.id_touched != -1 && state.scroll.savedDy/2 < state.doodle.coord.dy + 0.15){ // && state.scroll.savedDy/2 > state.doodle.coord.dy) {
     state.scroll.doScroll = true
   }
   state.scroll = iterateOnPlatforms(state.scroll, state.platforms, state.size.height)

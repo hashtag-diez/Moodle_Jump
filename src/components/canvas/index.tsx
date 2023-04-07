@@ -31,22 +31,25 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       savedDy: 7
     },
     size: { height, width },
-    platforms: new Array(100).fill(0).map((v,i) => {
-      if (i > 0){
+    platforms: new Array(50).fill(0).map((v,i) => {
+      if (i > 1) {
+        let minX = 50
+        let maxX = width-55
+        let averageY = 80
         return{
-          x: ((i+1)%2 +1)*200 + Math.floor(Math.random() * (200 - 0 + 1)) + 0,
-          y: height-i*220,
+          x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
+          y: height-i*averageY, 
           dx: 0,
           dy: 0,
         };
-      } else {
+      } else {  // la premiere platforme
         return {
-          x: ((i+1)%2 +1)*200,
-          y: height-i*220,
+          x: (1%2 +1)*200,
+          y: height-200,
           dx: 0,
           dy: 0,
         }
-      }
+      } 
     }
     )
   }
@@ -56,7 +59,7 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
 
   const iterate = (ctx: CanvasRenderingContext2D) => {
     state.current = step(state.current)
-    render(ctx)(state.current)
+    if (render(ctx)(state.current) == false) return
     requestAnimationFrame(() => iterate(ctx))
   }
 
