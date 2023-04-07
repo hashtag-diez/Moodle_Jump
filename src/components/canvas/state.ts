@@ -31,8 +31,8 @@ const iterateOnDoodle = (doo: Doodle, touched: boolean) => {
     coord.dx = (coord.dx > 0 ? (coord.dx - 0.15 < 0 ? 0 : coord.dx - 0.15): (coord.dx + 0.15 > 0 ? 0 : coord.dx + 0.15))
   } else {
     coord.dx = (
-      doo.direction == "LEFT" ? coord.dx - 0.15 :
-        (doo.direction == "RIGHT" ? coord.dx + 0.15 :
+      doo.direction == "LEFT" ? coord.dx - 0.1 :
+        (doo.direction == "RIGHT" ? coord.dx + 0.1 :
           coord.dx
         )
     )
@@ -48,7 +48,23 @@ const iterateOnPlatforms = (plats: Array<Coord>, touched : number, height: numbe
     plat.y = plat.y + plat.dy
   })
 }
+
+const teleportation = (state:State) => {
+  if (state.doodle.coord.x  >= state.size.width){
+    console.log("Bord droit")
+    state.doodle.coord.x = 0
+  }
+  else if (state.doodle.coord.x <= 0){
+    console.log("Bord gauche")
+    state.doodle.coord.x = state.size.width
+  }
+  return {
+    ...state
+  }
+}
+
 export const step = (state: State) => {
+  teleportation(state)
   let touched = false
   state.platforms.map((plat,i) => {
     if (collide(state.doodle.coord, plat)) {
@@ -76,7 +92,6 @@ export const doodleStopMove =
     if (code == "KeyA" || code == "KeyD") {
       console.log("TOC")
       state.doodle.stopMoving = true
-      state.doodle.direction = null
     }
     return { ...state }
   }

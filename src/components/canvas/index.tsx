@@ -23,11 +23,11 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
         dy: 7,
       },
       stopMoving : true,
-      direction: null,
+      direction: "LEFT",
     },
     id_touched: -1,
     size: { height, width },
-    platforms: new Array(50).fill(0).map((v,i) => {
+    platforms: new Array(4).fill(0).map((v,i) => {
       if (i > 0){
         return{
           x: ((i+1)%2 +1)*200 + Math.floor(Math.random() * (200 - 0 + 1)) + 0,
