@@ -1,6 +1,6 @@
 import * as conf from './conf'
 type Coord = { x: number; y: number; dx: number; dy: number }
-type Doodle = { coord: Coord; life: number; stopMoving: boolean; direction: "LEFT" | "RIGHT" | null }
+type Doodle = { coord: Coord; life: number; pick?: number, stopMoving: boolean; direction: "LEFT" | "RIGHT" | null }
 type Size = { height: number; width: number }
 
 export type State = {
@@ -8,6 +8,7 @@ export type State = {
   doodle: Doodle
   size: Size
   platforms: Array<Coord>
+  id_touched: number
   ennemies?: Array<Coord>
 }
 
@@ -17,12 +18,13 @@ const dist2 = (o1: Coord, o2: Coord) =>
 const collide = (o1: Coord, o2: Coord) =>
   o1.dy>=0 && dist2(o1, o2) < Math.pow(68, 2)
 
-const iterate = (doo: Doodle, touched: boolean) => {
+const iterateOnDoodle = (doo: Doodle, touched: boolean) => {
   let { coord } = doo
   if (!touched) {
-    coord.dy = (coord.dy + 0.15 > 14 ? 14 : (coord.dy > 0 ? coord.dy + 0.15 : coord.dy + 0.2))
+    coord.dy = (coord.dy + 0.15 > 10 ? 10 : (coord.dy > 0 ? coord.dy + 0.15 : coord.dy + 0.2))
   } else {
-    coord.dy = -14
+    console.log("Tic")
+    coord.dy = -10
   }
   coord.y = coord.y + coord.dy
   if (doo.stopMoving && coord.dx !== 0) {
@@ -37,14 +39,25 @@ const iterate = (doo: Doodle, touched: boolean) => {
   }
   coord.x = coord.x + coord.dx
 }
+const iterateOnPlatforms = (plats: Array<Coord>, touched : number, height: number ) => {
+  if(touched>=0){
+    touched = (plats[touched].y + 7 >= height - 100 ? -1 : touched)
+  }
+  plats.map(plat => {
+    plat.dy = (touched>=0 ? 7 : 0)
+    plat.y = plat.y + plat.dy
+  })
+}
 export const step = (state: State) => {
   let touched = false
-  state.platforms.map(plat => {
+  state.platforms.map((plat,i) => {
     if (collide(state.doodle.coord, plat)) {
       touched = true
+      state.id_touched = (state.platforms[i].y + 7 >= state.size.height - 100 ? -1 : i)
     }
   })
-  iterate(state.doodle, touched)
+  iterateOnDoodle(state.doodle, touched)
+  iterateOnPlatforms(state.platforms, state.id_touched, state.size.height)
   return {
     ...state
   }
