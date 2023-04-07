@@ -70,9 +70,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
     drawGreenPlatform(ctx, {x: plat.x, y: plat.y})
   )
 
-  console.log("Id touched: "+state.id_touched)
-
-  if (state.id_touched >= state.platforms.length-1){
+  if (state.scroll.id_touched >= state.platforms.length-1){
     let i = 0
     while(i < 50){
       state.platforms.push({x: ((state.platforms.length+i)%2 +1)*200 + Math.floor(Math.random() * (200 - 0 + 1)) + 0, y: state.size.height-(state.platforms.length+i)*220, dx: 0, dy: 0})
