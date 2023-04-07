@@ -15,22 +15,22 @@ const dist2 = (o1: Coord, o2: Coord) =>
   Math.pow(o1.x - o2.x, 2) + Math.pow(o1.y - o2.y, 2)
 
 const collide = (o1: Coord, o2: Coord) =>
-  dist2(o1, o2) < Math.pow(68, 2)
+  o1.dy>=0 && dist2(o1, o2) < Math.pow(68, 2)
 
 const iterate = (doo: Doodle, touched: boolean) => {
   let { coord } = doo
   if (!touched) {
-    coord.dy = (coord.dy + 0.3 > 14 ? 14 : (coord.dy > 0 ? coord.dy + 0.3 : coord.dy + 0.4))
+    coord.dy = (coord.dy + 0.15 > 14 ? 14 : (coord.dy > 0 ? coord.dy + 0.15 : coord.dy + 0.2))
   } else {
     coord.dy = -14
   }
   coord.y = coord.y + coord.dy
   if (doo.stopMoving && coord.dx !== 0) {
-    coord.dx = (coord.dx > 0 ? (coord.dx - 0.35 < 0 ? 0 : coord.dx - 0.35): (coord.dx + 0.35 > 0 ? 0 : coord.dx + 0.35))
+    coord.dx = (coord.dx > 0 ? (coord.dx - 0.15 < 0 ? 0 : coord.dx - 0.15): (coord.dx + 0.15 > 0 ? 0 : coord.dx + 0.15))
   } else {
     coord.dx = (
-      doo.direction == "LEFT" ? coord.dx - 0.35 :
-        (doo.direction == "RIGHT" ? coord.dx + 0.35 :
+      doo.direction == "LEFT" ? coord.dx - 0.15 :
+        (doo.direction == "RIGHT" ? coord.dx + 0.15 :
           coord.dx
         )
     )

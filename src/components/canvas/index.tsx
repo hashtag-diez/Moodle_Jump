@@ -18,9 +18,9 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       life: conf.BALLLIFE,
       coord: {
         x: 400,
-        y: height-40,
+        y: height-200,
         dx: 0,
-        dy: 14,
+        dy: 7,
       },
       stopMoving : true,
       direction: null,
