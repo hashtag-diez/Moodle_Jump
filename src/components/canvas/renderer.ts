@@ -74,9 +74,9 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   if (state.doodle.coord.y >= state.size.height){
     clear(ctx)
     drawBackground(ctx)
-    ctx.font = "bold 100px Dejavu Sans"
+    ctx.font = "bold 80px Dejavu Sans"
     ctx.fillStyle = "black"
-    ctx.fillText("Game Over: ", state.size.width/2 - 325, state.size.height/2 - 100)
+    ctx.fillText("Game Over: ", state.size.width/2 - 275, state.size.height/2 - 100)
     drawScore(ctx, state.scroll.id_touched, state.size.width/2 - 175  , state.size.height/2, 75)
 
     ctx.font = "bold 35px Dejavu Sans"
@@ -87,19 +87,14 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
 
   clear(ctx)
   drawBackground(ctx)
-  if (state.doodle.direction == "LEFT"){
-    drawDoodle(ctx, state.doodle.coord)
-  } else if (state.doodle.direction == "RIGHT"){
-    drawDoodleRotated(ctx, state.doodle.coord)
-  } 
   
   
   state.platforms.forEach(plat => 
     drawGreenPlatform(ctx, {x: plat.x, y: plat.y})
     )
   
-  if (state.scroll.id_touched >= state.platforms.length-5){
-    let i = 10
+  if (state.scroll.id_touched >= state.platforms.length-20){
+    let i = 25
     while(i + state.scroll.id_touched < state.scroll.id_touched + 55){
       let minX = 50
       let maxX = state.size.width-55
@@ -112,6 +107,13 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
       })
       i++
     }
+  }
+  if (state.doodle.direction == "LEFT"){
+    drawDoodle(ctx, state.doodle.coord)
+  } else if (state.doodle.direction == "RIGHT"){
+    drawDoodleRotated(ctx, state.doodle.coord)
+  } else {
+    console.log("Quelle direction ?");
   }
 
   drawScore(ctx, state.scroll.id_touched)
