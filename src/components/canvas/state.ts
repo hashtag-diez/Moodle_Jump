@@ -14,8 +14,9 @@ export type State = {
   ennemies?: Array<Coord>
 }
 
-const dist2 = (o1: Coord, o2: Coord) =>
+const dist2 = (o1: Coord, o2: Coord) => 
   Math.pow(o1.x - o2.x, 2) + Math.pow(o1.y - o2.y, 2)
+
 
 const calculateDy = (y1: number, y2: number) => {
   const diff = Math.abs(y2 - y1)
@@ -28,7 +29,7 @@ const calculateDy = (y1: number, y2: number) => {
   return -dy
 }
 const collide = (scroll: Scroll, o1: Coord, o2: Coord, i: number) =>
-  (!scroll.doScroll || i == scroll.id_touched) && o1.dy > 0 && dist2(o1, o2) < Math.pow(68,2)/*(o1.x+48 > o2.x-60 && o1.x-48 < o2.x+60 && o2.y - o1.y <= 68)*/
+  (!scroll.doScroll || i == scroll.id_touched) && o1.dy > 0 && /* dist2(o1, o2) < Math.pow(68,2) */ o1.x+48 > o2.x-60 && o1.x-48 < o2.x+60 && o2.y > o1.y && (dist2(o1, o2) < Math.pow(68,2))
 
 const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean, plat_touched: Coord | null, height: number) => {
   let { coord } = doo

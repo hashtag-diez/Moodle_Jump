@@ -43,7 +43,7 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
         return{
           x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
           y: height-i*averageY, 
-          dx: 0,
+          dx: i%10==0 ? 1 : 0,
           dy: 0,
         };
       } else {  // la premiere platforme
