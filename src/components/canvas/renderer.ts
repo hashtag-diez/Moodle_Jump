@@ -39,6 +39,14 @@ const drawDoodle = (
   ctx.fill()
 }
 
+const drawDoodleShooting = (
+  ctx: CanvasRenderingContext2D,
+  { x, y }: { x: number; y: number }
+) => {
+  ctx.beginPath()
+  ctx.drawImage(doodleImages, 200, 0, 160, 160, (x - 48) , y - 48, 96, 96) 
+  ctx.fill()
+}
 const drawScore = (
   ctx: CanvasRenderingContext2D,
   score: number = 0,
@@ -56,10 +64,19 @@ const drawDoodleRotated = (
   { x, y }: { x: number; y: number }
   ) => {
   ctx.beginPath()
-  ctx.drawImage(doodleImagesRotated, 0, 0, 210, 160, (x - 48) , y - 48, 96, 96) 
+  ctx.drawImage(doodleImagesRotated, 0, 0, 207, 160, (x - 48) , y - 48, 96, 96) 
   ctx.fill()
 }
 
+const drawBall = (
+  ctx: CanvasRenderingContext2D,
+  { x, y }: { x: number; y: number }
+  ) => {
+  ctx.beginPath()
+  ctx.fillStyle = "black"
+  ctx.arc(x+12, y, 10, 0, 2*Math.PI)
+  ctx.fill()
+}
 const drawBackground = (
   ctx: CanvasRenderingContext2D
 ) => {
@@ -108,13 +125,15 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
       i++
     }
   }
-  if (state.doodle.direction == "LEFT"){
+
+  state.balls.forEach(ball => drawBall(ctx, ball))
+  if(state.doodle.shooting.is_shooting){
+    drawDoodleShooting(ctx, state.doodle.coord)
+  } else if (state.doodle.direction == "LEFT"){
     drawDoodle(ctx, state.doodle.coord)
   } else if (state.doodle.direction == "RIGHT"){
     drawDoodleRotated(ctx, state.doodle.coord)
-  } else {
-    console.log("Quelle direction ?");
-  }
+  } 
 
   drawScore(ctx, state.scroll.id_touched)
 

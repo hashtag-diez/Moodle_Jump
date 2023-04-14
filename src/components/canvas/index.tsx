@@ -1,6 +1,6 @@
 import * as conf from './conf'
 import { useRef, useEffect } from 'react'
-import { State, step, doodleMove, doodleStopMove } from './state'
+import { State, step, doodleMove, doodleStopMove, doodleShoot, doodleStopShoot } from './state'
 import { render } from './renderer'
 
 const initCanvas =
@@ -24,6 +24,10 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       },
       stopMoving : true,
       direction: "LEFT",
+      shooting:{
+        is_shooting: false,
+        pressed: false
+      }
     },
     scroll: {
       id_touched: -1,
@@ -50,8 +54,8 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
           dy: 0,
         }
       } 
-    }
-    )
+    }),
+    balls: []
   }
 
   const ref = useRef<any>()
@@ -64,16 +68,39 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
   }
 
   const onMove = (e: KeyboardEvent) => {
-    state.current = doodleMove(state.current, e)
+    const { code } = e
+  
+    if (code == "KeyA" || code == "KeyD") {
+      state.current = doodleMove(state.current, e)
+    }
+  }
+  const onShoot = (e:KeyboardEvent) => {
+    const { code } = e
+  
+    if (code == "Space") {
+      state.current = doodleShoot(state.current)
+    }
+  }
+  const onStopShoot = (e: KeyboardEvent) => {
+    const { code } = e
+    if (code == "Space") {
+      state.current = doodleStopShoot(state.current)
+    }
   }
   const onStop = (e: KeyboardEvent) => {
-    state.current = doodleStopMove(state.current, e)
+    const { code } = e
+  
+    if (code == "KeyA" || code == "KeyD") {
+      state.current = doodleStopMove(state.current)
+    }
   }
   useEffect(() => {
     if (ref.current) {
       initCanvas(iterate)(ref.current)
       ref.current.addEventListener('keydown', onMove)
+      ref.current.addEventListener('keydown', onShoot)
       ref.current.addEventListener('keyup', onStop)
+      ref.current.addEventListener('keyup', onStopShoot)
     }
     return () => {
       ref.current.removeEventListener('click', onMove)
