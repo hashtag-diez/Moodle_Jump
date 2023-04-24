@@ -1,7 +1,7 @@
 import * as conf from './conf'
 import { useRef, useEffect } from 'react'
 import { State, step, doodleMove, doodleStopMove, doodleShoot, doodleStopShoot } from './state'
-import { render } from './renderer'
+import { render, setShowCollisions } from './renderer'
 
 const initCanvas =
   (iterate: (ctx: CanvasRenderingContext2D) => void) =>
@@ -18,7 +18,7 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       life: conf.BALLLIFE,
       coord: {
         x: 400,
-        y: height-200,
+        y: height-400,
         dx: 0,
         dy: 7,
       },
@@ -30,32 +30,34 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       }
     },
     scroll: {
+      id_touched_ennemi: -1,
       id_touched: -1,
       doScroll: false,
-      savedDy: 7
+      savedDy: 0,
     },
     size: { height, width },
     platforms: new Array(50).fill(0).map((v,i) => {
       if (i > 1) {
         let minX = 50
         let maxX = width-55
-        let averageY = 80
+        let averageY = 50
         return{
           x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
-          y: height-i*averageY, 
-          dx: i%10==0 ? 1 : 0,
+          y: height-(i+1)*averageY, 
+          dx: 0, // i%20==0 ? 1 : 0,
           dy: 0,
         };
       } else {  // la premiere platforme
         return {
           x: (1%2 +1)*200,
-          y: height-200,
+          y: height - 100,
           dx: 0,
           dy: 0,
         }
       } 
     }),
-    balls: []
+    balls: [],
+    ennemies: []
   }
 
   const ref = useRef<any>()
@@ -94,6 +96,13 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       state.current = doodleStopMove(state.current)
     }
   }
+  const onCollisions = (e: KeyboardEvent) => {
+    const { code } = e
+  
+    if (code == "KeyC") {
+      setShowCollisions();
+    }
+  }
   useEffect(() => {
     if (ref.current) {
       initCanvas(iterate)(ref.current)
@@ -101,6 +110,7 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       ref.current.addEventListener('keydown', onShoot)
       ref.current.addEventListener('keyup', onStop)
       ref.current.addEventListener('keyup', onStopShoot)
+      ref.current.addEventListener('keydown', onCollisions)
     }
     return () => {
       ref.current.removeEventListener('click', onMove)
