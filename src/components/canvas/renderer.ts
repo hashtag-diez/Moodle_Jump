@@ -15,6 +15,9 @@ export const setShowCollisions = () => {
 const doodleImages = new Image();
 doodleImages.src = "Sprite Sheet.png"
 
+const spring1 = new Image();
+spring1.src = "springs.png"
+
 const doodleImagesRotated = new Image();
 doodleImagesRotated.src = "Sprite Sheet rotate.png"
 
@@ -40,11 +43,16 @@ const clear = (ctx: CanvasRenderingContext2D) => {
 }
 
 const drawGreenPlatform = (
-  ctx: CanvasRenderingContext2D,
-  { x, y }: { x: number; y: number }
+  ctx: CanvasRenderingContext2D, id: number,
+  { x, y }: { x: number; y: number }, hasSpring: boolean
 ) => {
   ctx.beginPath()
   ctx.drawImage(doodleImages, 0, 480, 150, 45, x - 60, y - 20, 120, 40)
+  if(hasSpring){
+    ctx.drawImage(spring1, 0, 0, 36, 20, x + (id%2==0 ? 20 : -40) , y - 30 , 32, 22)
+  } else{
+
+  }
   ctx.fill()
   if (showCollisions) {
     ctx.rect(x - 45, y - 12, 95, 24);
@@ -251,15 +259,15 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   clear(ctx)
   drawBackground(ctx)
 
-  state.platforms.forEach(plat => {
-    if (plat.dx != 0) {
-      drawBluePlatform(ctx, { x: plat.x, y: plat.y });
-      if ((plat.x + 60 > state.size.width) || (plat.x - 60 < 0)) {
-        plat.dx = plat.dx * (-1)
+  state.platforms.forEach((plat, i) => {
+    if (plat.coord.dx != 0) {
+      drawBluePlatform(ctx, { x: plat.coord.x, y: plat.coord.y });
+      if ((plat.coord.x + 60 > state.size.width) || (plat.coord.x - 60 < 0)) {
+        plat.coord.dx = plat.coord.dx * (-1)
       }
-      plat.x = plat.x + plat.dx
+      plat.coord.x = plat.coord.x + plat.coord.dx
     } else {
-      drawGreenPlatform(ctx, { x: plat.x, y: plat.y })
+      drawGreenPlatform(ctx,i, { x: plat.coord.x, y: plat.coord.y }, plat.hasSpring)
     }
   }
   )
@@ -290,11 +298,13 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
       let maxX = state.size.width - 55
       let averageY = 50 + (Math.min(10 * mapVarGenerator, 100))
       state.platforms.push({
+        hasSpring: Math.floor(Math.random()*10)>8 ? true : false,
+        coord: {
         x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
         y: state.size.height - (i + 29) * averageY - mapVarGenerator, // a revoir tout ca  
         dx: (mapVarGenerator > 3) ? (mapVarGenerator > 4 ? (mapVarGenerator > 5 ? (i % 2 == 0 ? 1 : 0) : (i % 10 == 0 ? 1 : 0)) : (i % 20 == 0 ? 1 : 0)) : 0,
         dy: 0
-      })
+      }})
       if ((mapVarGenerator > 3) && ((i + 10) % 20 == 0)) {
         state.ennemies.push({
           x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,

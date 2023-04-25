@@ -1,6 +1,6 @@
 import * as conf from './conf'
 import { useRef, useEffect } from 'react'
-import { State, step, doodleMove, doodleStopMove, doodleShoot, doodleStopShoot } from './state'
+import { State, step, doodleMove, doodleStopMove, doodleShoot, doodleStopShoot, Plat } from './state'
 import { render, setShowCollisions } from './renderer'
 
 const initCanvas =
@@ -41,18 +41,24 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
         let minX = 50
         let maxX = width-55
         let averageY = 50
-        return{
-          x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
-          y: height-(i+1)*averageY, 
-          dx: 0, // i%20==0 ? 1 : 0,
-          dy: 0,
-        };
-      } else {  // la premiere platforme
         return {
-          x: (1%2 +1)*200,
-          y: height - 100,
-          dx: 0,
-          dy: 0,
+          hasSpring: Math.floor(Math.random()*10)>8 ? true : false,
+          coord: {
+            x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
+            y: height-(i+1)*averageY,
+            dx: 0, // i%20==0 ? 1 : 0,
+            dy: 0
+          }
+        }
+      } else { 
+        return {
+          hasSpring: false,
+          coord: {
+            x: (1%2 +1)*200,
+            y: height - 100,
+            dx: 0,
+            dy: 0
+          }
         }
       } 
     }),
