@@ -15,6 +15,7 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
   const initialState: State = {
     view: "Accueil",
     doodle: {
+      flying: false,
       life: conf.BALLLIFE,
       coord: {
         x: 400,

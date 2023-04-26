@@ -1,7 +1,7 @@
 import * as conf from './conf'
 type Coord = { x: number; y: number; dx: number; dy: number }
-type Plat = { hasSpring: boolean, coord: Coord }
-type Doodle = { shooting: Shooting, coord: Coord; life: number; peak?: number, stopMoving: boolean; direction: "LEFT" | "RIGHT" | null }
+type Plat = { hasSpring: boolean, touched?: boolean, coord: Coord }
+type Doodle = { flying: boolean, shooting: Shooting, coord: Coord; life: number, stopMoving: boolean; direction: "LEFT" | "RIGHT" | null }
 type Size = { height: number; width: number }
 type Scroll = { id_touched_ennemi: number, id_touched: number, doScroll: boolean, savedDy: number }
 type Shooting = { is_shooting: boolean, timeout?: NodeJS.Timeout | null, pressed: boolean }
@@ -18,26 +18,18 @@ export type State = {
 
 export type { Plat }
 
-const dist2 = (o1: Coord, o2: Coord) =>
-  Math.pow(o1.x - o2.x, 2) + Math.pow(o1.y - o2.y, 2)
-
-const calculateDy = (y1: number, y2: number) => {
-  const diff = Math.abs(y2 - y1)
-  let dy = 0
-  let sum = 0
-  while (sum < diff) {
-    sum = sum + dy
-    dy = dy + 0.15
-  }
-  return -dy
+const collide_spring = (doo: Doodle, plat: Plat, id: number) => {
+  if (!plat.hasSpring) return false
+  const o2 = { x: plat.coord.x + (id % 2 == 0 ? 36 : -24), y: plat.coord.y - 19 }
+  return (doo.coord.dy > 0 && (((doo.coord.x - 20 < o2.x-16) && doo.coord.x + 20 > o2.x-16) || ((doo.coord.x - 20 < o2.x+16) && doo.coord.x + 20 > o2.x+16)) && (((doo.coord.y + 40) < o2.y + 11) && ((doo.coord.y + 40) > o2.y - 11)))
 }
 
-const collide_platforms = (scroll: Scroll, o1: Coord, o2: Coord, i: number) => {
+const collide_platforms = (o1: Coord, o2: Coord) => {
   return (o1.dy > 0 && (((o1.x - 25) < o2.x + 50) && ((o1.x + 20) > o2.x - 45)) && (((o1.y + 40) < o2.y + 12) && ((o1.y + 40) > o2.y - 12)))
 }
 
 const collid_ennemis = (scroll: Scroll, o1: Coord, o2: Coord, i: number, state: State) => {
-  if (((((o1.x - 25) < o2.x + 30) && ((o1.x + 20) > o2.x - 30)) && (((o1.y - 40) < o2.y + 40) && ((o1.y - 40) > o2.y - 40)))) {
+  if (!state.doodle.flying && ((((o1.x - 25) < o2.x + 30) && ((o1.x + 20) > o2.x - 30)) && (((o1.y - 40) < o2.y + 40) && ((o1.y - 40) > o2.y - 40)))) {
     state.doodle.life = 0;
     return false;
   } else if ((!scroll.doScroll || i == scroll.id_touched_ennemi) && o1.dy > 0 && (((o1.x - 25) < o2.x + 20) && ((o1.x + 20) > o2.x - 20)) && (((o1.y + 40) < o2.y - 40) && ((o1.y + 40) > o2.y - 50))) {
@@ -48,14 +40,15 @@ const collid_ennemis = (scroll: Scroll, o1: Coord, o2: Coord, i: number, state: 
 }
 
 
-const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean, plat_touched: Coord | null, height: number) => {
-  let { coord } = doo
+const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean) => {
+  let { flying, coord } = doo
   if (!touched) {
     if (!scroll.doScroll && scroll.savedDy > 0) {
       coord.dy = -9 + scroll.savedDy;
       scroll.savedDy = 0;
     }
     coord.dy = coord.dy + 0.2
+    coord.dy = (flying && coord.dy > 0 ? 0 : coord.dy)
     // coord.dy = (coord.dy + 0.15 > 10 ? 10 : (coord.dy > 0 ? coord.dy + 0.15 : coord.dy + 0.2))
   } else {
     // coord.dy = calculateDy((plat_touched ? plat_touched.y : height - 100), height - 460)
@@ -72,8 +65,8 @@ const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean, plat_tou
   }
   else if (doo.stopMoving == false) {
     coord.dx = (
-      doo.direction == "LEFT" ? coord.dx - 0.12 :
-        (doo.direction == "RIGHT" ? coord.dx + 0.12 :
+      doo.direction == "LEFT" ? Math.max(coord.dx - 0.15, -6) :
+        (doo.direction == "RIGHT" ? Math.min(coord.dx + 0.15, 6) :
           coord.dx
         )
     )
@@ -84,15 +77,21 @@ const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean, plat_tou
 const iterateOnPlatforms = (scroll: Scroll, plats: Array<Plat>, height: number, ennemis: Array<Coord>, state: State) => {
   let { id_touched_ennemi, id_touched, doScroll, savedDy } = scroll
   let dyScroll = 0
-  if ((id_touched != -1 && (id_touched_ennemi == -1 || plats[id_touched].coord.y < ennemis[id_touched_ennemi].y) && plats[id_touched].coord.y <= height - 100 && plats[id_touched].coord.y + 7 >= height - 100)) {
+  if (!state.doodle.flying && id_touched != -1 && (id_touched_ennemi == -1 || plats[id_touched].coord.y < ennemis[id_touched_ennemi].y) && plats[id_touched].coord.y <= height - 100 && plats[id_touched].coord.y + 7 >= height - 100) {
     doScroll = false
     dyScroll = 0;
   }
-  if ((doScroll && (id_touched || id_touched_ennemi))) {
-    dyScroll = 7;
+  if (state.doodle.flying && plats[id_touched].coord.y > state.size.height * 2) {
+    doScroll = false
+    dyScroll = 0;
+    state.doodle.flying = false
+  }
+  if (doScroll && (id_touched || id_touched_ennemi)) {
+    dyScroll = (state.doodle.flying ? 10 : 7);
+    (plats[id_touched].hasSpring && plats[id_touched].touched == true ? state.doodle.flying = true : "")
   }
 
-  if ((dyScroll > 0)) {
+  if (dyScroll > 0 && !state.doodle.flying) {
     state.doodle.coord.dy = -0.2;
     savedDy += 0.2;
   }
@@ -122,7 +121,6 @@ const iterateOnEnnemis = (scroll: Scroll, ennemis: Array<Coord>, height: number,
 
 
 const iterateOnBalls = (scroll: Scroll, balls: Array<Coord>) => {
-  console.log(balls.length)
   balls.map(plat => {
     plat.y = plat.y + plat.dy
   })
@@ -156,7 +154,13 @@ export const step = (state: State) => {
     }
   })
   state.platforms.map((plat, i) => {
-    if (collide_platforms(state.scroll, state.doodle.coord, plat.coord, i)) {
+    if(collide_spring(state.doodle, plat, i)){
+      touched = true
+      state.doodle.flying = true
+      plat.touched = true
+      state.scroll.id_touched = i
+      state.scroll.doScroll = true
+    } else if (collide_platforms(state.doodle.coord, plat.coord)) {
       touched = true
       state.scroll.id_touched = (state.platforms[i].coord.y + 7 >= state.size.height - 60 ? state.scroll.id_touched : i)
       state.scroll.doScroll = true
@@ -170,8 +174,7 @@ export const step = (state: State) => {
   state.balls = iterateOnBalls(state.scroll, state.balls)
   state.scroll = iterateOnPlatforms(state.scroll, state.platforms, state.size.height, state.ennemies, state)
   state.scroll = iterateOnEnnemis(state.scroll, state.ennemies, state.size.height, state.platforms, state)
-  iterateOnDoodle(state.scroll, state.doodle, touched, state.platforms[state.scroll.id_touched]?.coord, state.size.height)
-
+  iterateOnDoodle(state.scroll, state.doodle, touched)
   return {
     ...state
   }

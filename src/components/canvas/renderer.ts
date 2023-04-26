@@ -44,14 +44,14 @@ const clear = (ctx: CanvasRenderingContext2D) => {
 
 const drawGreenPlatform = (
   ctx: CanvasRenderingContext2D, id: number,
-  { x, y }: { x: number; y: number }, hasSpring: boolean
+  { x, y }: { x: number; y: number }, hasSpring: boolean, touched: boolean|null
 ) => {
   ctx.beginPath()
   ctx.drawImage(doodleImages, 0, 480, 150, 45, x - 60, y - 20, 120, 40)
   if(hasSpring){
-    ctx.drawImage(spring1, 0, 0, 36, 20, x + (id%2==0 ? 20 : -40) , y - 30 , 32, 22)
-  } else{
-
+    (touched!==null ? 
+      ctx.drawImage(spring1, 33, 0, 36, 40, x + (id%2==0 ? 20 : -40) , y - 44 , 32, 38) 
+    : ctx.drawImage(spring1, 0, 0, 36, 20, x + (id%2==0 ? 20 : -40) , y - 30 , 32, 22) )
   }
   ctx.fill()
   if (showCollisions) {
@@ -267,7 +267,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
       }
       plat.coord.x = plat.coord.x + plat.coord.dx
     } else {
-      drawGreenPlatform(ctx,i, { x: plat.coord.x, y: plat.coord.y }, plat.hasSpring)
+      drawGreenPlatform(ctx,i, { x: plat.coord.x, y: plat.coord.y }, plat.hasSpring, plat.touched ?? null)
     }
   }
   )
