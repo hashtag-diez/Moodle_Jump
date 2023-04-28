@@ -1,7 +1,7 @@
 import * as conf from './conf'
 type Coord = { x: number; y: number; dx: number; dy: number, dead?: boolean, type?: number }
 type Plat = { hasSpring: boolean, touched?: boolean, coord: Coord }
-type Doodle = { flying: boolean, shooting: Shooting, coord: Coord; life: number, stopMoving: boolean; direction: "LEFT" | "RIGHT" | null }
+type Doodle = { flying: boolean, shooting: Shooting, coord: Coord; life: number, stopMoving: boolean; direction: "LEFT" | "RIGHT" | null, touched?: boolean, audioTouched?: number }
 type Size = { height: number; width: number }
 type Scroll = { id_touched_ennemi: number, id_touched: number, doScroll: boolean, savedDy: number }
 type Shooting = { is_shooting: boolean, timeout?: NodeJS.Timeout | null, pressed: boolean }
@@ -21,7 +21,7 @@ export type { Plat }
 const collide_spring = (doo: Doodle, plat: Plat, id: number) => {
   if (!plat.hasSpring) return false
   const o2 = { x: plat.coord.x + (id % 2 == 0 ? 36 : -24), y: plat.coord.y - 19 }
-  return (doo.coord.dy > 0 && (((doo.coord.x - 20 < o2.x - 16) && doo.coord.x + 20 > o2.x - 16) || ((doo.coord.x - 20 < o2.x + 16) && doo.coord.x + 20 > o2.x + 16)) && (((doo.coord.y + 40) < o2.y + 11) && ((doo.coord.y + 40) > o2.y - 11)))
+  return (doo.coord.dy > 0 && (((doo.coord.x - 25 < o2.x - 16) && doo.coord.x + 20 > o2.x - 16) || ((doo.coord.x - 25 < o2.x + 16) && doo.coord.x + 20 > o2.x + 16)) && (((doo.coord.y + 40) < o2.y + 11) && ((doo.coord.y + 40) > o2.y - 11)))
 }
 
 const collide_platforms = (o1: Coord, o2: Coord) => {
@@ -56,6 +56,15 @@ const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean) => {
       coord.dy = -9 + scroll.savedDy;
       scroll.savedDy = 0;
     }
+
+    // pour arreter l'animation
+    if (coord.dy >= 0) {
+      doo.touched = false
+    }
+    if (doo.audioTouched != 3) {
+      doo.audioTouched = 0 // 0 for no sound
+    }
+
     coord.dy = coord.dy + 0.2
     coord.dy = (flying && coord.dy > 0 ? 0 : coord.dy)
     // coord.dy = (coord.dy + 0.15 > 10 ? 10 : (coord.dy > 0 ? coord.dy + 0.15 : coord.dy + 0.2))
@@ -65,6 +74,7 @@ const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean) => {
       if (coord.dy > 0) {
         coord.dy = -9
       }
+      doo.touched = true // pour demarrer l'animation
     }
   }
   coord.y = coord.y + coord.dy
@@ -169,8 +179,12 @@ export const step = (state: State) => {
         plat.touched = true
         state.scroll.id_touched = i
         state.scroll.doScroll = true
+        state.doodle.audioTouched = 2 // 2 for springs sound
       } else if (collide_platforms(state.doodle.coord, plat.coord)) {
         touched = true
+        if (i != state.scroll.id_touched) {
+          state.doodle.audioTouched = 1 // 1 for jump sound
+        }
         state.scroll.id_touched = (state.platforms[i].coord.y + 7 >= state.size.height - 60 ? state.scroll.id_touched : i)
         state.scroll.doScroll = true
       }
@@ -211,7 +225,6 @@ export const doodleStopMove = (state: State) => {
 
 export const doodleShoot =
   (state: State): State => {
-
     if (!state.doodle.shooting.pressed) {
       state.doodle.shooting.pressed = true
       state.doodle.shooting.is_shooting = true
@@ -227,6 +240,7 @@ export const doodleShoot =
         }
       }, 600)
       state.doodle.shooting.timeout = timeout
+      state.doodle.audioTouched = 3 // 3 for the shoot 
     }
     return { ...state }
   }

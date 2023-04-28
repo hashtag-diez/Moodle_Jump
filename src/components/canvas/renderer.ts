@@ -18,6 +18,9 @@ var dY = -9;
 const doodleImages = new Image();
 doodleImages.src = "Sprite Sheet.png"
 
+const doodleImagesTouched = new Image();
+doodleImagesTouched.src = "Sprite Sheet2.png"
+
 const spring1 = new Image();
 spring1.src = "springs.png"
 
@@ -43,6 +46,27 @@ gameOverBackground.src = "gameOverBackground.png"
 
 const playAgainButton = new Image();
 playAgainButton.src = "playAgain.png"
+
+const audioContext = new AudioContext();
+const audioJump = new Audio('jump.mp3');
+var source = audioContext.createMediaElementSource(audioJump);
+source.connect(audioContext.destination);
+
+const audioSprings = new Audio('springshoes.mp3');
+source = audioContext.createMediaElementSource(audioJump);
+source.connect(audioContext.destination);
+
+const audioThrow = new Audio('basic_throw.mp3');
+source = audioContext.createMediaElementSource(audioThrow);
+source.connect(audioContext.destination);
+
+const audioEndGame = new Audio('pada.mp3');
+source = audioContext.createMediaElementSource(audioThrow);
+source.connect(audioContext.destination);
+
+const audioMonsters = new Audio('monsters.mp3');
+source = audioContext.createMediaElementSource(audioThrow);
+source.connect(audioContext.destination);
 
 // Permettant de jouer avec la graine de generation de map
 var mapVarGenerator = 0;
@@ -72,32 +96,58 @@ const drawGreenPlatform = (
     (touched !== null ?
       ctx.drawImage(spring1, 33, 0, 36, 40, x + (id % 2 == 0 ? 20 : -40), y - 44, 32, 38)
       : ctx.drawImage(spring1, 0, 0, 36, 20, x + (id % 2 == 0 ? 20 : -40), y - 30, 32, 22))
+    ctx.fill()
+    if (showCollisions) {
+      ctx.beginPath()
+      ctx.rect((x + (id % 2 == 0 ? 36 : -24)) - 16, (y - 19) - 11, 32, 22);
+      ctx.strokeStyle = "magenta";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.closePath();
+    }
   }
-  ctx.fill()
   if (showCollisions) {
+    ctx.beginPath();
     ctx.rect(x - 45, y - 12, 95, 24);
     ctx.strokeStyle = "lime";
     ctx.lineWidth = 3;
     ctx.stroke();
+    ctx.closePath();
   }
 }
 
 const drawDoodle = (
   ctx: CanvasRenderingContext2D,
   { x, y }: { x: number; y: number },
-  rotated: boolean = false
+  rotated: boolean = false,
+  touched: boolean = false
 ): void => {
-  if (rotated) {
-    ctx.beginPath()
-    ctx.scale(-1, 1);
-    ctx.drawImage(doodleImages, 390, 10, 200, 160, - (x + 48), y - 48, 96, 96)
-    ctx.scale(-1, 1);
-    ctx.fill();
+  if (touched) {
+    if (rotated) {
+      ctx.beginPath()
+      ctx.scale(-1, 1);
+      ctx.drawImage(doodleImagesTouched, 390, 10, 200, 160, - (x + 48), y - 48, 96, 96)
+      ctx.scale(-1, 1);
+      ctx.fill();
 
+    } else {
+      ctx.beginPath()
+      ctx.drawImage(doodleImagesTouched, 390, 10, 200, 160, (x - 48), y - 48, 96, 96)
+      ctx.fill()
+    }
   } else {
-    ctx.beginPath()
-    ctx.drawImage(doodleImages, 390, 10, 200, 160, (x - 48), y - 48, 96, 96)
-    ctx.fill()
+    if (rotated) {
+      ctx.beginPath()
+      ctx.scale(-1, 1);
+      ctx.drawImage(doodleImages, 390, 10, 200, 160, - (x + 48), y - 48, 96, 96)
+      ctx.scale(-1, 1);
+      ctx.fill();
+
+    } else {
+      ctx.beginPath()
+      ctx.drawImage(doodleImages, 390, 10, 200, 160, (x - 48), y - 48, 96, 96)
+      ctx.fill()
+    }
   }
   if (showCollisions) {
     ctx.beginPath()
@@ -294,8 +344,10 @@ export const render_menu = (ctx: CanvasRenderingContext2D) => (state: State) => 
   ctx.fill()
 
   if (savedY > 655) {
+    audioJump.play();
     dY = -9;
   }
+
   savedY += dY;
   dY += 0.15;
 
@@ -339,6 +391,8 @@ export const render_game_over = (ctx: CanvasRenderingContext2D) => (state: State
 
   if (state.doodle.coord.y >= state.size.height / 2 + 50) {
     state.doodle.coord.dy = 0
+  } else {
+    audioEndGame.play();
   }
 
   ctx.beginPath()
@@ -351,7 +405,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   // Doodle outside 
   if (state.doodle.coord.y + 20 >= state.size.height) {
     state.doodle.life = 0;
-    state.doodle.coord = { x: state.size.width / 2, y: 0, dx: 0, dy: 0.5 }
+    state.doodle.coord = { x: state.size.width / 2, y: 0, dx: 0, dy: 3 }
     state.view = "GameOver"
   }
 
@@ -402,6 +456,10 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
         drawMonster2(ctx, { x: ennemi.x, y: ennemi.y }, (ennemi.dx > 0 ? false : true));
       }
     }
+
+    if ((state.doodle.coord.y >= ennemi.y) && (ennemi.y >= 0)) {
+      audioMonsters.play();
+    }
   }
   )
 
@@ -412,7 +470,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
     let lastY = state.platforms[state.platforms.length - 1].coord.y
     let minX = 50
     let maxX = state.size.width - 55
-    let averageY = 50 + (Math.min(10 * mapVarGenerator, 160))
+    let averageY = 50 + (Math.min(10 * mapVarGenerator, 80))
     while (i < 50) {
       state.platforms.push({
         hasSpring: Math.floor(Math.random() * 10) > 8 ? true : false,
@@ -424,15 +482,26 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
         }
       })
       lastY = lastY - averageY
-      if ((mapVarGenerator > 5) && (i % 20 == 0)) {
-        state.ennemies.push({
-          x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
-          y: lastY - averageY,
-          dx: 1,
-          dy: 0.5,
-          type: Math.floor(Math.random() * (2 - 1 + 1)) + 1
-        })
-        lastY = lastY - averageY
+      if (mapVarGenerator > 5) {
+        if ((mapVarGenerator > 9) && (i % 10 == 0)){
+          state.ennemies.push({
+            x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
+            y: lastY - averageY,
+            dx: 1,
+            dy: 0.5,
+            type: Math.floor(Math.random() * (2 - 1 + 1)) + 1
+          })
+          lastY = lastY - averageY
+        } else if (i % 20 == 0) {
+          state.ennemies.push({
+            x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
+            y: lastY - averageY,
+            dx: 1,
+            dy: 0.5,
+            type: Math.floor(Math.random() * (2 - 1 + 1)) + 1
+          })
+          lastY = lastY - averageY
+        }
       }
       i++
     }
@@ -440,14 +509,37 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   }
 
 
+
+
   state.balls.forEach(ball => drawBall(ctx, ball))
   if (state.doodle.shooting.is_shooting) {
     drawDoodleShooting(ctx, state.doodle.coord)
   } else if (state.doodle.direction == "LEFT") {
-    drawDoodle(ctx, state.doodle.coord)
+    if (state.doodle.touched == true) {
+      drawDoodle(ctx, state.doodle.coord, false, true)
+      if (state.doodle.audioTouched === 1) { audioJump.play(); }
+    } else {
+      drawDoodle(ctx, state.doodle.coord, false, false)
+    }
   } else if (state.doodle.direction == "RIGHT") {
-    drawDoodle(ctx, state.doodle.coord, true)
+    if (state.doodle.touched == true) {
+      drawDoodle(ctx, state.doodle.coord, true, true)
+      if (state.doodle.audioTouched === 1) { audioJump.play(); }
+    } else {
+      drawDoodle(ctx, state.doodle.coord, true, false)
+    }
   }
+
+
+  /** Audios */
+  if (state.doodle.audioTouched === 2) {
+    audioSprings.play();
+  }
+  if (state.doodle.audioTouched === 3) {
+    audioThrow.play();
+    state.doodle.audioTouched = 0;
+  }
+
 
   drawScore(ctx, state.scroll.id_touched)
 
