@@ -1,5 +1,5 @@
 import * as conf from './conf'
-type Coord = { x: number; y: number; dx: number; dy: number }
+type Coord = { x: number; y: number; dx: number; dy: number, dead?: boolean, type?: number }
 type Plat = { hasSpring: boolean, touched?: boolean, coord: Coord }
 type Doodle = { flying: boolean, shooting: Shooting, coord: Coord; life: number, stopMoving: boolean; direction: "LEFT" | "RIGHT" | null }
 type Size = { height: number; width: number }
@@ -21,7 +21,7 @@ export type { Plat }
 const collide_spring = (doo: Doodle, plat: Plat, id: number) => {
   if (!plat.hasSpring) return false
   const o2 = { x: plat.coord.x + (id % 2 == 0 ? 36 : -24), y: plat.coord.y - 19 }
-  return (doo.coord.dy > 0 && (((doo.coord.x - 20 < o2.x-16) && doo.coord.x + 20 > o2.x-16) || ((doo.coord.x - 20 < o2.x+16) && doo.coord.x + 20 > o2.x+16)) && (((doo.coord.y + 40) < o2.y + 11) && ((doo.coord.y + 40) > o2.y - 11)))
+  return (doo.coord.dy > 0 && (((doo.coord.x - 20 < o2.x - 16) && doo.coord.x + 20 > o2.x - 16) || ((doo.coord.x - 20 < o2.x + 16) && doo.coord.x + 20 > o2.x + 16)) && (((doo.coord.y + 40) < o2.y + 11) && ((doo.coord.y + 40) > o2.y - 11)))
 }
 
 const collide_platforms = (o1: Coord, o2: Coord) => {
@@ -29,13 +29,22 @@ const collide_platforms = (o1: Coord, o2: Coord) => {
 }
 
 const collid_ennemis = (scroll: Scroll, o1: Coord, o2: Coord, i: number, state: State) => {
-  if (!state.doodle.flying && ((((o1.x - 25) < o2.x + 30) && ((o1.x + 20) > o2.x - 30)) && (((o1.y - 40) < o2.y + 40) && ((o1.y - 40) > o2.y - 40)))) {
-    state.doodle.life = 0;
-    return false;
-  } else if ((!scroll.doScroll || i == scroll.id_touched_ennemi) && o1.dy > 0 && (((o1.x - 25) < o2.x + 20) && ((o1.x + 20) > o2.x - 20)) && (((o1.y + 40) < o2.y - 40) && ((o1.y + 40) > o2.y - 50))) {
-    return true;
+  // Monstre type 1 
+  if (o2.type == 1) {
+    if (/* !state.doodle.flying && */ ((((o1.x - 25) < o2.x + 30) && ((o1.x + 20) > o2.x - 30)) && (((o1.y - 40) < o2.y + 40) && ((o1.y - 40) > o2.y - 40)))) {
+      state.doodle.life = 0;
+      return false;
+    } else if ((!scroll.doScroll || i == scroll.id_touched_ennemi) && o1.dy > 0 && (((o1.x - 25) < o2.x + 20) && ((o1.x + 20) > o2.x - 20)) && (((o1.y + 40) < o2.y - 40) && ((o1.y + 40) > o2.y - 50))) {
+      return true;
+    }
+  } else if (o2.type == 2) {  // Monstre type 2
+    if ((((o1.x - 25) < o2.x + 40) && ((o1.x + 20) > o2.x - 40)) && (((o1.y - 40) < o2.y + 20) && ((o1.y - 40) > o2.y - 25))) {
+      state.doodle.life = 0;
+      return false;
+    } else if ((!scroll.doScroll || i == scroll.id_touched_ennemi) && o1.dy > 0 && (((o1.x - 25) < o2.x + 20) && ((o1.x + 20) > o2.x - 20)) && (((o1.y + 40) < o2.y - 27) && ((o1.y + 40) > o2.y - 37))) {
+      return true;
+    }
   }
-
   return false;
 }
 
@@ -139,33 +148,34 @@ const teleportation = (state: State) => {
 }
 
 export const step = (state: State) => {
-  // alert("y: " + state.doodle.coord.y + " AND dy: " + state.doodle.coord.dy)
   teleportation(state)
   let touched = false
   state.ennemies.map((ennemi, i) => {
     if (collid_ennemis(state.scroll, state.doodle.coord, ennemi, i, state)) {
       touched = true;
       state.scroll.id_touched_ennemi = i;
-      state.ennemies[i].dy = -100; // psq il meurt, permet d'afficher les stars dans le renderer
+      state.ennemies[i].dead = true; // psq il meurt, permet d'afficher les stars dans le renderer
     } else {
       if (state.doodle.life === 0) {
         state.doodle.coord.dy = 1
       }
     }
   })
-  state.platforms.map((plat, i) => {
-    if(collide_spring(state.doodle, plat, i)){
-      touched = true
-      state.doodle.flying = true
-      plat.touched = true
-      state.scroll.id_touched = i
-      state.scroll.doScroll = true
-    } else if (collide_platforms(state.doodle.coord, plat.coord)) {
-      touched = true
-      state.scroll.id_touched = (state.platforms[i].coord.y + 7 >= state.size.height - 60 ? state.scroll.id_touched : i)
-      state.scroll.doScroll = true
-    }
-  })
+  if (state.doodle.life !== 0) {
+    state.platforms.map((plat, i) => {
+      if (collide_spring(state.doodle, plat, i)) {
+        touched = true
+        state.doodle.flying = true
+        plat.touched = true
+        state.scroll.id_touched = i
+        state.scroll.doScroll = true
+      } else if (collide_platforms(state.doodle.coord, plat.coord)) {
+        touched = true
+        state.scroll.id_touched = (state.platforms[i].coord.y + 7 >= state.size.height - 60 ? state.scroll.id_touched : i)
+        state.scroll.doScroll = true
+      }
+    })
+  }
 
   // FIXME pq && state.scroll.savedDy/2 > state.doodle.coord.dy) ? 
   // if (state.scroll.id_touched != -1 && state.scroll.savedDy / 2 < state.doodle.coord.dy + 0.15) { // && state.scroll.savedDy/2 > state.doodle.coord.dy) {

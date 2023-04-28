@@ -12,20 +12,40 @@ export const setShowCollisions = () => {
   showCollisions = !showCollisions;
 }
 
+var savedY = 655;
+var dY = -9;
+
 const doodleImages = new Image();
 doodleImages.src = "Sprite Sheet.png"
 
 const spring1 = new Image();
 spring1.src = "springs.png"
 
-const doodleImagesRotated = new Image();
-doodleImagesRotated.src = "Sprite Sheet rotate.png"
-
 const doodleBackground = new Image();
 doodleBackground.src = "background.png"
 
+const menuBackground = new Image();
+menuBackground.src = "Default.png"
+
+const playButton = new Image();
+playButton.src = "play.png"
+
+const playButtonClicked = new Image();
+playButtonClicked.src = "playClicked.png"
+
+var playClicked = false;
+export const setPlayClicked = () => {
+  playClicked = true;
+}
+
+const gameOverBackground = new Image();
+gameOverBackground.src = "gameOverBackground.png"
+
+const playAgainButton = new Image();
+playAgainButton.src = "playAgain.png"
+
 // Permettant de jouer avec la graine de generation de map
-var mapVarGenerator = 1;
+var mapVarGenerator = 0;
 
 var stars: HTMLImageElement[] = [];
 stars.push(new Image());
@@ -44,14 +64,14 @@ const clear = (ctx: CanvasRenderingContext2D) => {
 
 const drawGreenPlatform = (
   ctx: CanvasRenderingContext2D, id: number,
-  { x, y }: { x: number; y: number }, hasSpring: boolean, touched: boolean|null
+  { x, y }: { x: number; y: number }, hasSpring: boolean, touched: boolean | null
 ) => {
   ctx.beginPath()
   ctx.drawImage(doodleImages, 0, 480, 150, 45, x - 60, y - 20, 120, 40)
-  if(hasSpring){
-    (touched!==null ? 
-      ctx.drawImage(spring1, 33, 0, 36, 40, x + (id%2==0 ? 20 : -40) , y - 44 , 32, 38) 
-    : ctx.drawImage(spring1, 0, 0, 36, 20, x + (id%2==0 ? 20 : -40) , y - 30 , 32, 22) )
+  if (hasSpring) {
+    (touched !== null ?
+      ctx.drawImage(spring1, 33, 0, 36, 40, x + (id % 2 == 0 ? 20 : -40), y - 44, 32, 38)
+      : ctx.drawImage(spring1, 0, 0, 36, 20, x + (id % 2 == 0 ? 20 : -40), y - 30, 32, 22))
   }
   ctx.fill()
   if (showCollisions) {
@@ -64,11 +84,21 @@ const drawGreenPlatform = (
 
 const drawDoodle = (
   ctx: CanvasRenderingContext2D,
-  { x, y }: { x: number; y: number }
+  { x, y }: { x: number; y: number },
+  rotated: boolean = false
 ): void => {
-  ctx.beginPath()
-  ctx.drawImage(doodleImages, 390, 10, 200, 160, (x - 48), y - 48, 96, 96)
-  ctx.fill()
+  if (rotated) {
+    ctx.beginPath()
+    ctx.scale(-1, 1);
+    ctx.drawImage(doodleImages, 390, 10, 200, 160, - (x + 48), y - 48, 96, 96)
+    ctx.scale(-1, 1);
+    ctx.fill();
+
+  } else {
+    ctx.beginPath()
+    ctx.drawImage(doodleImages, 390, 10, 200, 160, (x - 48), y - 48, 96, 96)
+    ctx.fill()
+  }
   if (showCollisions) {
     ctx.beginPath()
     ctx.moveTo(x - 25, y + 40);
@@ -96,13 +126,23 @@ const drawDoodleShooting = (
   ctx.drawImage(doodleImages, 200, 0, 160, 160, (x - 48), y - 48, 96, 96)
   ctx.fill()
 }
+
 const drawMonster1 = (
   ctx: CanvasRenderingContext2D,
-  { x, y }: { x: number, y: number }
+  { x, y }: { x: number, y: number },
+  rotated: boolean = false
 ): void => {
-  ctx.beginPath()
-  ctx.drawImage(doodleImages, 30, 310, 170, 150, x - 50, y - 50, 100, 100)
-  ctx.fill()
+  if (rotated) {
+    ctx.beginPath();
+    ctx.scale(-1, 1);
+    ctx.drawImage(doodleImages, 30, 310, 170, 150, -(x + 50), y - 50, 100, 100);
+    ctx.scale(-1, 1);
+    ctx.fill();
+  } else {
+    ctx.beginPath()
+    ctx.drawImage(doodleImages, 30, 310, 170, 150, x - 50, y - 50, 100, 100)
+    ctx.fill()
+  }
   if (showCollisions) {
     ctx.beginPath()
     ctx.rect(x - 30, y - 40, 60, 80);
@@ -113,6 +153,39 @@ const drawMonster1 = (
 
     ctx.beginPath()
     ctx.rect(x - 20, y - 50, 40, 10);
+    ctx.strokeStyle = "lime";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.closePath();
+  }
+}
+
+const drawMonster2 = (
+  ctx: CanvasRenderingContext2D,
+  { x, y }: { x: number, y: number },
+  rotated: boolean = false
+): void => {
+  if (rotated) {
+    ctx.beginPath();
+    ctx.scale(-1, 1);
+    ctx.drawImage(doodleImages, 225, 165, 170, 100, -(x + 50), y - 50, 100, 75);
+    ctx.scale(-1, 1);
+    ctx.fill();
+  } else {
+    ctx.beginPath()
+    ctx.drawImage(doodleImages, 225, 165, 170, 100, x - 50, y - 50, 100, 75)
+    ctx.fill()
+  }
+  if (showCollisions) {
+    ctx.beginPath()
+    ctx.rect(x - 40, y - 25, 80, 45);
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath()
+    ctx.rect(x - 20, y - 37, 40, 10);
     ctx.strokeStyle = "lime";
     ctx.lineWidth = 3;
     ctx.stroke();
@@ -143,32 +216,6 @@ const drawEvent = (
   ctx.font = "bold " + fontSize + "px Dejavu Sans"
   ctx.fillStyle = "black"
   ctx.fillText("[TEST] Diffcult evel: " + val, x, y)
-}
-
-const drawDoodleRotated = (
-  ctx: CanvasRenderingContext2D,
-  { x, y }: { x: number; y: number }
-) => {
-  ctx.beginPath()
-  ctx.drawImage(doodleImagesRotated, 20, 10, 200, 160, (x - 48), (y - 48), 96, 96)
-  ctx.fill()
-  if (showCollisions) {
-    ctx.beginPath()
-    ctx.moveTo(x - 25, y + 40);
-    ctx.lineTo(x + 20, y + 40);
-    ctx.strokeStyle = "blue";
-    ctx.lineWidth = 5;
-    ctx.stroke();
-    ctx.closePath();
-
-    ctx.beginPath()
-    ctx.moveTo(x - 25, y - 40);
-    ctx.lineTo(x + 20, y - 40);
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 5;
-    ctx.stroke();
-    ctx.closePath();
-  }
 }
 
 const drawBluePlatform = (
@@ -239,20 +286,73 @@ const drawBackground = (
   ctx.fill()
 }
 
+export const render_menu = (ctx: CanvasRenderingContext2D) => (state: State) => {
+  clear(ctx)
+  const { height, width } = ctx.canvas
+  ctx.beginPath()
+  ctx.drawImage(menuBackground, 0, 0, width, height)
+  ctx.fill()
+
+  if (savedY > 655) {
+    dY = -9;
+  }
+  savedY += dY;
+  dY += 0.15;
+
+  drawDoodle(ctx, { x: 90, y: savedY }, true)
+
+  if (playClicked) {
+    ctx.beginPath()
+    ctx.drawImage(playButtonClicked, width - 250, height - 250)
+    ctx.fill()
+  } else {
+    ctx.beginPath()
+    ctx.drawImage(playButton, width - 250, height - 250)
+    ctx.fill()
+  }
+
+  return true;
+}
+
+export const render_game_over = (ctx: CanvasRenderingContext2D) => (state: State) => {
+  clear(ctx)
+  ctx.beginPath()
+  ctx.drawImage(gameOverBackground, 0, 0, state.size.width, state.size.height)
+  ctx.fill()
+
+  ctx.font = "bold 60px Monospace"
+  ctx.fillStyle = "black"
+  ctx.fillText("" + state.scroll.id_touched, state.size.width / 2 - 25, state.size.height / 2 - 50)
+
+  ctx.font = "bold 30px Monospace"
+  if (state.scroll.id_touched <= 99) {
+    ctx.fillText("(un peu nul quoi)", state.size.width / 2 - 150, state.size.height / 2 + 200)
+  } else if (state.scroll.id_touched <= 300) {
+    ctx.fillText("(pas mal)", state.size.width / 2 - 75, state.size.height / 2 + 200)
+  } else if (state.scroll.id_touched > 300) {
+    ctx.fillText("(gg)", state.size.width / 2 - 25, state.size.height / 2 + 200)
+  }
+
+  state.doodle.coord.y = state.doodle.coord.y + state.doodle.coord.dy
+  drawDoodle(ctx, state.doodle.coord, true)
+  draw_starts(ctx, { x: state.doodle.coord.x, y: state.doodle.coord.y })
+
+  if (state.doodle.coord.y >= state.size.height / 2 + 50) {
+    state.doodle.coord.dy = 0
+  }
+
+  ctx.beginPath()
+  ctx.drawImage(playAgainButton, state.size.width - 350, state.size.height - 200)
+  ctx.fill()
+
+}
 
 export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
+  // Doodle outside 
   if (state.doodle.coord.y + 20 >= state.size.height) {
-    clear(ctx)
-    drawBackground(ctx)
-    ctx.font = "bold 60px Dejavu Sans"
-    ctx.fillStyle = "black"
-    ctx.fillText("Game Over: ", state.size.width / 2 - 200, state.size.height / 2 - 100)
-    drawScore(ctx, state.scroll.id_touched, state.size.width / 2 - 125, state.size.height / 2 - 50, 50)
-
-    ctx.font = "bold 30px Dejavu Sans"
-    ctx.fillText("(un peu nul quoi)", state.size.width / 2 - 150, state.size.height / 2 + 200)
-
-    return false
+    state.doodle.life = 0;
+    state.doodle.coord = { x: state.size.width / 2, y: 0, dx: 0, dy: 0.5 }
+    state.view = "GameOver"
   }
 
 
@@ -267,51 +367,72 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
       }
       plat.coord.x = plat.coord.x + plat.coord.dx
     } else {
-      drawGreenPlatform(ctx,i, { x: plat.coord.x, y: plat.coord.y }, plat.hasSpring, plat.touched ?? null)
+      drawGreenPlatform(ctx, i, { x: plat.coord.x, y: plat.coord.y }, plat.hasSpring, plat.touched ?? null)
     }
   }
   )
 
   state.ennemies.forEach(ennemi => {
-    if (ennemi.dx != 0) {
-      drawMonster1(ctx, { x: ennemi.x, y: ennemi.y });
-      if ((ennemi.x + 50 > state.size.width) || (ennemi.x - 50 < 0)) {
-        ennemi.dx = ennemi.dx * (-1)
-      }
-      ennemi.x = ennemi.x + ennemi.dx
-    } else {
-      alert("sans dx")
-      drawMonster1(ctx, { x: ennemi.x, y: ennemi.y });
-    }
-    if (ennemi.dy == -100) {
+    if (ennemi.dead) {
       draw_starts(ctx, { x: ennemi.x, y: ennemi.y })
+    }
+    if (ennemi.dx != 0) {
+      // Monstre type 1
+      if (ennemi.type == 1) {
+        if ((ennemi.x + 50 > state.size.width) || (ennemi.x - 50 < 0)) {
+          ennemi.dx = ennemi.dx * (-1)
+        }
+        if (ennemi.x % 20 == 0) {
+          ennemi.dy = (-1) * ennemi.dy;
+        }
+        ennemi.x = ennemi.x + ennemi.dx;
+        ennemi.y = ennemi.y + ennemi.dy;
+        drawMonster1(ctx, { x: ennemi.x, y: ennemi.y }, (ennemi.dx > 0 ? false : true));
+      } else if (ennemi.type == 2) {  // Monstre type 2
+        if (ennemi.y % 10 == 0) {
+          ennemi.dy = (-1) * ennemi.dy;
+        }
+        ennemi.y = ennemi.y + ennemi.dy;
+        drawMonster2(ctx, { x: ennemi.x, y: ennemi.y }, (ennemi.dx > 0 ? false : true));
+      }
+    } else {
+      if (ennemi.type == 1) {
+        drawMonster1(ctx, { x: ennemi.x, y: ennemi.y }, (ennemi.dx > 0 ? false : true));
+      } else if (ennemi.type == 2) {
+        drawMonster2(ctx, { x: ennemi.x, y: ennemi.y }, (ennemi.dx > 0 ? false : true));
+      }
     }
   }
   )
 
 
-  drawEvent(ctx, mapVarGenerator - 1);
-  if (state.scroll.id_touched >= state.platforms.length - 30) {
+  drawEvent(ctx, mapVarGenerator);
+  if (state.scroll.id_touched >= state.platforms.length - 50) {
     let i = 0
-    while (i < 30) {
-      let minX = 50
-      let maxX = state.size.width - 55
-      let averageY = 50 + (Math.min(10 * mapVarGenerator, 100))
+    let lastY = state.platforms[state.platforms.length - 1].coord.y
+    let minX = 50
+    let maxX = state.size.width - 55
+    let averageY = 50 + (Math.min(10 * mapVarGenerator, 160))
+    while (i < 50) {
       state.platforms.push({
-        hasSpring: Math.floor(Math.random()*10)>8 ? true : false,
+        hasSpring: Math.floor(Math.random() * 10) > 8 ? true : false,
         coord: {
-        x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
-        y: state.size.height - (i + 29) * averageY - mapVarGenerator, // a revoir tout ca  
-        dx: (mapVarGenerator > 3) ? (mapVarGenerator > 4 ? (mapVarGenerator > 5 ? (i % 2 == 0 ? 1 : 0) : (i % 10 == 0 ? 1 : 0)) : (i % 20 == 0 ? 1 : 0)) : 0,
-        dy: 0
-      }})
-      if ((mapVarGenerator > 3) && ((i + 10) % 20 == 0)) {
+          x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
+          y: lastY - averageY,
+          dx: (mapVarGenerator > 2) ? (mapVarGenerator > 3 ? (mapVarGenerator > 4 ? (i % 5 == 0 ? 1 : 0) : (i % 10 == 0 ? 1 : 0)) : (i % 20 == 0 ? 1 : 0)) : 0,
+          dy: 0
+        }
+      })
+      lastY = lastY - averageY
+      if ((mapVarGenerator > 5) && (i % 20 == 0)) {
         state.ennemies.push({
           x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
-          y: state.size.height - (i + 7) * averageY,
+          y: lastY - averageY,
           dx: 1,
-          dy: 0
+          dy: 0.5,
+          type: Math.floor(Math.random() * (2 - 1 + 1)) + 1
         })
+        lastY = lastY - averageY
       }
       i++
     }
@@ -325,12 +446,10 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   } else if (state.doodle.direction == "LEFT") {
     drawDoodle(ctx, state.doodle.coord)
   } else if (state.doodle.direction == "RIGHT") {
-    drawDoodleRotated(ctx, state.doodle.coord)
+    drawDoodle(ctx, state.doodle.coord, true)
   }
 
   drawScore(ctx, state.scroll.id_touched)
-
-
 
   if (state.doodle.life === 0) {
     draw_starts(ctx, { x: state.doodle.coord.x, y: state.doodle.coord.y })
