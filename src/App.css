@@ -12,3 +12,11 @@ body {
 canvas{
   outline: none;
 }
+.invisible{
+  position: absolute;
+  width: 200px;
+  height: 84px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}

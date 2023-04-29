@@ -14,6 +14,7 @@ export type State = {
   balls: Array<Coord>
   scroll: Scroll
   ennemies: Array<Coord>
+  seed: number
 }
 
 export type { Plat }
@@ -122,11 +123,10 @@ const iterateOnPlatforms = (scroll: Scroll, plats: Array<Plat>, height: number, 
   ennemis.map(ennemi => {
     ennemi.y = ennemi.y + dyScroll;
   })
-
   return { id_touched_ennemi, doScroll, id_touched, savedDy }
 }
 
-const iterateOnEnnemis = (scroll: Scroll, ennemis: Array<Coord>, height: number, plats: Array<Plat>, state: State) => {
+const iterateOnEnnemis = (scroll: Scroll, ennemis: Array<Coord>, height: number, balls: Array<Coord>): [Array<Coord>, Coord[], Scroll] => {
   let { id_touched_ennemi, id_touched, doScroll, savedDy } = scroll
   if (id_touched_ennemi != -1 && ennemis[id_touched_ennemi].y >= height + 100) {
     id_touched_ennemi = -1;
@@ -135,11 +135,28 @@ const iterateOnEnnemis = (scroll: Scroll, ennemis: Array<Coord>, height: number,
     let dy = ((id_touched_ennemi >= 0) ? 3 : 0)
     ennemi.y = ennemi.y + dy
   })
-  return { id_touched_ennemi, doScroll, id_touched, savedDy }
+  const newBalls = balls
+  const newEnnemis = ennemis.filter((ennemi,i) => {
+    let nottouched = true
+    balls.forEach((ball, i) => {
+      if (ennemi.type == 1) {
+        if (((ball.x < ennemi.x + 30) && ((ball.x +10) > ennemi.x - 30)) && (((ball.y) < ennemi.y + 40) && ((ball.y + 10) > ennemi.y - 40))) {
+          nottouched =  false;
+          newBalls.splice(i, 1)
+        }
+      } else if (ennemi.type == 2) {  // Monstre type 2
+        if (((ball.x < ennemi.x + 40) && ((ball.x + 10) > ennemi.x - 40)) && ((ball.y < ennemi.y + 22) && (ball.y > ennemi.y - 22))) {
+          nottouched =  false;
+          newBalls.splice(i, 1)
+        }
+      }
+    })
+    return nottouched
+  })
+  return [newBalls, newEnnemis, { id_touched_ennemi, doScroll, id_touched, savedDy }]
 }
 
-
-const iterateOnBalls = (scroll: Scroll, balls: Array<Coord>) => {
+const iterateOnBalls = (balls: Array<Coord>) => {
   balls.map(plat => {
     plat.y = plat.y + plat.dy
   })
@@ -195,9 +212,12 @@ export const step = (state: State) => {
   // if (state.scroll.id_touched != -1 && state.scroll.savedDy / 2 < state.doodle.coord.dy + 0.15) { // && state.scroll.savedDy/2 > state.doodle.coord.dy) {
   // }
 
-  state.balls = iterateOnBalls(state.scroll, state.balls)
+  state.balls = iterateOnBalls(state.balls)
   state.scroll = iterateOnPlatforms(state.scroll, state.platforms, state.size.height, state.ennemies, state)
-  state.scroll = iterateOnEnnemis(state.scroll, state.ennemies, state.size.height, state.platforms, state)
+  let [balls, enn, scroll] = iterateOnEnnemis(state.scroll, state.ennemies, state.size.height, state.balls)
+  state.scroll = scroll
+  state.ennemies = enn
+  state.balls = balls
   iterateOnDoodle(state.scroll, state.doodle, touched)
   return {
     ...state
