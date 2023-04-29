@@ -268,15 +268,23 @@ const drawEvent = (
 }
 
 const drawBluePlatform = (
-  ctx: CanvasRenderingContext2D, id : number,
+  ctx: CanvasRenderingContext2D, id: number,
   { x, y }: { x: number; y: number }, hasSpring: boolean, touched: boolean | null
 ): void => {
   ctx.beginPath()
   ctx.drawImage(doodleImages, 300, 480, 150, 45, x - 60, y - 20, 120, 40)
-  if(hasSpring){
+  if (hasSpring) {
     (touched !== null ?
       ctx.drawImage(spring1, 33, 0, 36, 40, x + (id % 2 == 0 ? 20 : -40), y - 44, 32, 38)
       : ctx.drawImage(spring1, 0, 0, 36, 20, x + (id % 2 == 0 ? 20 : -40), y - 30, 32, 22))
+    if (showCollisions) {
+      ctx.beginPath()
+      ctx.rect((x + (id % 2 == 0 ? 36 : -24)) - 16, (y - 19) - 11, 32, 22);
+      ctx.strokeStyle = "magenta";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.closePath();
+    }
   }
   ctx.fill()
   if (showCollisions) {
@@ -318,7 +326,7 @@ const drawBall = (
   ctx.fill()
   if (showCollisions) {
     ctx.beginPath()
-    ctx.rect(x+2, y-10, 20, 20);
+    ctx.rect(x + 2, y - 10, 20, 20);
     ctx.strokeStyle = "orange ";
     ctx.lineWidth = 3;
     ctx.stroke();
@@ -476,7 +484,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   )
 
 
-  drawEvent(ctx, state.seed);
+  // drawEvent(ctx, state.seed);
   if (state.scroll.id_touched >= state.platforms.length - 50) {
     let i = 0
     let lastY = state.platforms[state.platforms.length - 1].coord.y
@@ -495,7 +503,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
       })
       lastY = lastY - averageY
       if (state.seed > 5) {
-        if ((state.seed > 9) && (i % 10 == 0)){
+        if ((state.seed > 9) && (i % 10 == 0)) {
           state.ennemies.push({
             x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
             y: lastY - averageY,
