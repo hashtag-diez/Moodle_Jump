@@ -199,7 +199,7 @@ export const step = (state: State) => {
         state.doodle.audioTouched = 2 // 2 for springs sound
       } else if (collide_platforms(state.doodle.coord, plat.coord)) {
         touched = true
-        if (i != state.scroll.id_touched) {
+        if (i > state.scroll.id_touched) { // pour eviter d'avoir trop souvent le son
           state.doodle.audioTouched = 1 // 1 for jump sound
         }
         state.scroll.id_touched = (state.platforms[i].coord.y + 7 >= state.size.height - 60 ? state.scroll.id_touched : i)

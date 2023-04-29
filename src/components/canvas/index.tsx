@@ -25,9 +25,9 @@ const initCanvas =
     requestAnimationFrame(() => iterate(ctx));
   };
 
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+// function wait(ms: number): Promise<void> {
+//   return new Promise((resolve) => setTimeout(resolve, ms));
+// }
 
 const Canvas = ({ height, width }: { height: number; width: number }) => {
   const initialState: State = {
@@ -111,7 +111,7 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
 
     if (code == "KeyA" || code == "KeyD") {
       state.current = doodleMove(state.current, e);
-    }
+    } 
   };
   const onShoot = (e: KeyboardEvent) => {
     const { code } = e;
@@ -140,25 +140,25 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       setShowCollisions();
     }
   };
-  async function handleClick(event: MouseEvent) {
-    const x = event.clientX;
-    const y = event.clientY;
+  // async function handleClick(event: MouseEvent) {
+  //   const x = event.clientX;
+  //   const y = event.clientY;
 
-    if (state.current.view === "Accueil") {
-      if (x >= 965 && x <= 1180 && y >= 640 && y <= 720) {
-        setPlayClicked();
-        await wait(100);
-        state.current.view = "InGame";
-      }
-    }
+  //   if (state.current.view === "Accueil") {
+  //     if (x >= 965 && x <= 1180 && y >= 640 && y <= 720) {
+  //       setPlayClicked();
+  //       await wait(100);
+  //       state.current.view = "InGame";
+  //     }
+  //   }
 
-    if (state.current.view === "GameOver") {
-      if (x >= 865 && x <= 1085 && y >= 695 && y <= 770) {
-        await wait(100);
-        alert("comment reinitialiser tout mdr?");
-      }
-    }
-  }
+  //   if (state.current.view === "GameOver") {
+  //     if (x >= 865 && x <= 1085 && y >= 695 && y <= 770) {
+  //       await wait(100);
+  //       alert("comment reinitialiser tout mdr?");
+  //     }
+  //   }
+  // }
   useEffect(() => {
     if (ref.current) {
       initCanvas(iterate)(ref.current);
@@ -167,12 +167,12 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       ref.current.addEventListener("keyup", onStop);
       ref.current.addEventListener("keyup", onStopShoot);
       ref.current.addEventListener("keydown", onCollisions);
-      ref.current.addEventListener("click", handleClick);
+      // ref.current.addEventListener("click", handleClick);
     }
     return () => {
       ref.current.removeEventListener("click", onMove);
       ref.current.removeEventListener("mousemove", onMove);
-      ref.current.removeEventListener("click", handleClick);
+      // ref.current.removeEventListener("click", handleClick);
     };
   }, []);
   return (

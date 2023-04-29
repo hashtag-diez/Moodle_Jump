@@ -47,28 +47,12 @@ gameOverBackground.src = "gameOverBackground.png"
 const playAgainButton = new Image();
 playAgainButton.src = "playAgain.png"
 
-/* const audioContext = new AudioContext();
 const audioJump = new Audio('jump.mp3');
-var source = audioContext.createMediaElementSource(audioJump);
-source.connect(audioContext.destination);
-
 const audioSprings = new Audio('springshoes.mp3');
-source = audioContext.createMediaElementSource(audioJump);
-source.connect(audioContext.destination);
-
 const audioThrow = new Audio('basic_throw.mp3');
-source = audioContext.createMediaElementSource(audioThrow);
-source.connect(audioContext.destination);
-
 const audioEndGame = new Audio('pada.mp3');
-source = audioContext.createMediaElementSource(audioThrow);
-source.connect(audioContext.destination);
-
 const audioMonsters = new Audio('monsters.mp3');
-source = audioContext.createMediaElementSource(audioThrow);
-source.connect(audioContext.destination); */
 
-// Permettant de jouer avec la graine de generation de map
 
 var stars: HTMLImageElement[] = [];
 stars.push(new Image());
@@ -172,8 +156,26 @@ const drawDoodleShooting = (
   { x, y }: { x: number; y: number }
 ) => {
   ctx.beginPath()
-  ctx.drawImage(doodleImages, 200, 0, 160, 160, (x - 48), y - 48, 96, 96)
+  ctx.drawImage(doodleImages, 210, 0, 180, 160, (x - 48), y - 48, 96, 96)
   ctx.fill()
+
+  if (showCollisions) {
+    ctx.beginPath()
+    ctx.moveTo(x - 25, y + 40);
+    ctx.lineTo(x + 20, y + 40);
+    ctx.strokeStyle = "blue";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath()
+    ctx.moveTo(x - 25, y - 40);
+    ctx.lineTo(x + 20, y - 40);
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.closePath();
+  }
 }
 
 const drawMonster1 = (
@@ -273,6 +275,7 @@ const drawBluePlatform = (
 ): void => {
   ctx.beginPath()
   ctx.drawImage(doodleImages, 300, 480, 150, 45, x - 60, y - 20, 120, 40)
+  ctx.fill()
   if (hasSpring) {
     (touched !== null ?
       ctx.drawImage(spring1, 33, 0, 36, 40, x + (id % 2 == 0 ? 20 : -40), y - 44, 32, 38)
@@ -286,12 +289,13 @@ const drawBluePlatform = (
       ctx.closePath();
     }
   }
-  ctx.fill()
   if (showCollisions) {
+    ctx.beginPath()
     ctx.rect(x - 45, y - 12, 95, 24);
     ctx.strokeStyle = "lime";
     ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.closePath();
   }
 }
 
@@ -364,7 +368,6 @@ export const render_menu = (ctx: CanvasRenderingContext2D) => (state: State) => 
   ctx.fill()
 
   if (savedY > 655) {
-    // audioJump.play();
     dY = -9;
   }
 
@@ -412,7 +415,7 @@ export const render_game_over = (ctx: CanvasRenderingContext2D) => (state: State
   if (state.doodle.coord.y >= state.size.height / 2 + 50) {
     state.doodle.coord.dy = 0
   } else {
-    // audioEndGame.play();
+    audioEndGame.play();
   }
 
   ctx.beginPath()
@@ -436,7 +439,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   state.platforms.forEach((plat, i) => {
     if (plat.coord.dx != 0) {
       drawBluePlatform(ctx, i, { x: plat.coord.x, y: plat.coord.y }, plat.hasSpring, plat.touched ?? null);
-      if ((plat.coord.x + 60 > state.size.width) || (plat.coord.x - 60 < 0)) {
+      if ((plat.coord.x + 60 >= state.size.width) || (plat.coord.x - 60 <= 0)) {
         plat.coord.dx = plat.coord.dx * (-1)
       }
       plat.coord.x = plat.coord.x + plat.coord.dx
@@ -478,7 +481,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
     }
 
     if ((state.doodle.coord.y >= ennemi.y) && (ennemi.y >= 0)) {
-      //audioMonsters.play();
+      audioMonsters.play();
     }
   }
   )
@@ -488,8 +491,8 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   if (state.scroll.id_touched >= state.platforms.length - 50) {
     let i = 0
     let lastY = state.platforms[state.platforms.length - 1].coord.y
-    let minX = 50
-    let maxX = state.size.width - 55
+    let minX = 60
+    let maxX = state.size.width - 60
     let averageY = 50 + (Math.min(10 * state.seed, 80))
     while (i < 50) {
       state.platforms.push({
@@ -537,7 +540,8 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   } else if (state.doodle.direction == "LEFT") {
     if (state.doodle.touched == true) {
       drawDoodle(ctx, state.doodle.coord, false, true)
-      if (state.doodle.audioTouched === 1) { // audioJump.play(); 
+      if (state.doodle.audioTouched === 1) {
+        audioJump.play();
       }
     } else {
       drawDoodle(ctx, state.doodle.coord, false, false)
@@ -545,7 +549,8 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   } else if (state.doodle.direction == "RIGHT") {
     if (state.doodle.touched == true) {
       drawDoodle(ctx, state.doodle.coord, true, true)
-      if (state.doodle.audioTouched === 1) { // audioJump.play(); 
+      if (state.doodle.audioTouched === 1) {
+        audioJump.play();
       }
     } else {
       drawDoodle(ctx, state.doodle.coord, true, false)
@@ -555,10 +560,10 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
 
   /** Audios */
   if (state.doodle.audioTouched === 2) {
-    // audioSprings.play();
+    audioSprings.play();
   }
   if (state.doodle.audioTouched === 3) {
-    // audioThrow.play();
+    audioThrow.play();
     state.doodle.audioTouched = 0;
   }
 
