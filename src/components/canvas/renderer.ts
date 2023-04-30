@@ -1,4 +1,3 @@
-import * as conf from './conf'
 import { State } from './state'
 
 const COLORS = {
@@ -337,20 +336,6 @@ const drawBall = (
     ctx.closePath();
   }
 }
-
-const drawCircle = (
-  ctx: CanvasRenderingContext2D,
-  { x, y }: { x: number; y: number },
-  color: string,
-  rayon: number
-) => {
-  ctx.beginPath()
-  ctx.arc(x, y, rayon, 0, 2 * Math.PI)
-  ctx.strokeStyle = color
-  ctx.lineWidth = 3;
-  ctx.stroke();
-}
-
 const drawBackground = (
   ctx: CanvasRenderingContext2D
 ) => {
@@ -398,15 +383,6 @@ export const render_game_over = (ctx: CanvasRenderingContext2D) => (state: State
   ctx.font = "bold 60px Monospace"
   ctx.fillStyle = "black"
   ctx.fillText("" + state.scroll.id_touched, state.size.width / 2 - 25, state.size.height / 2 - 50)
-
-  // ctx.font = "bold 30px Monospace"
-  // if (state.scroll.id_touched <= 99) {
-  //   ctx.fillText("(un peu nul quoi)", state.size.width / 2 - 150, state.size.height / 2 + 200)
-  // } else if (state.scroll.id_touched <= 300) {
-  //   ctx.fillText("(pas mal)", state.size.width / 2 - 75, state.size.height / 2 + 200)
-  // } else if (state.scroll.id_touched > 300) {
-  //   ctx.fillText("(gg)", state.size.width / 2 - 25, state.size.height / 2 + 200)
-  // }
 
   state.doodle.coord.y = state.doodle.coord.y + state.doodle.coord.dy
   drawDoodle(ctx, state.doodle.coord, true)
@@ -486,8 +462,6 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   }
   )
 
-
-  // drawEvent(ctx, state.seed);
   if (state.scroll.id_touched >= state.platforms.length - 50) {
     let i = 0
     let lastY = 0
@@ -519,7 +493,6 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
             dy: 0.5,
             type: Math.floor(Math.random() * (2 - 1 + 1)) + 1
           })
-          // lastY = lastY - averageY
         } else if (i % 20 == 0) {
           state.ennemies.push({
             x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
@@ -528,7 +501,6 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
             dy: 0.5,
             type: Math.floor(Math.random() * (2 - 1 + 1)) + 1
           })
-          // lastY = lastY - averageY
         } 
       }
       i++

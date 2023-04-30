@@ -1,4 +1,3 @@
-import * as conf from "./conf";
 import { useRef, useEffect } from "react";
 import {
   State,
@@ -7,13 +6,11 @@ import {
   doodleStopMove,
   doodleShoot,
   doodleStopShoot,
-  Plat,
 } from "./state";
 import {
   render,
   render_game_over,
   render_menu,
-  setPlayClicked,
   setShowCollisions,
 } from "./renderer";
 
@@ -25,16 +22,12 @@ const initCanvas =
     requestAnimationFrame(() => iterate(ctx));
   };
 
-// function wait(ms: number): Promise<void> {
-//   return new Promise((resolve) => setTimeout(resolve, ms));
-// }
-
 const Canvas = ({ height, width }: { height: number; width: number }) => {
   const initialState: State = {
     view: "Accueil",
     doodle: {
       flying: false,
-      life: conf.BALLLIFE,
+      life: 1,
       coord: {
         x: 400,
         y: height - 400,

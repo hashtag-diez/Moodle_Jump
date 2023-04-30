@@ -1,4 +1,3 @@
-import * as conf from './conf'
 type Coord = { x: number; y: number; dx: number; dy: number, dead?: boolean, type?: number }
 type Plat = { hasSpring: boolean, touched?: boolean, coord: Coord }
 type Doodle = { flying: boolean, shooting: Shooting, coord: Coord; life: number, stopMoving: boolean; direction: "LEFT" | "RIGHT" | null, touched?: boolean, audioTouched?: number }
@@ -68,9 +67,7 @@ const iterateOnDoodle = (scroll: Scroll, doo: Doodle, touched: boolean) => {
 
     coord.dy = coord.dy + 0.2
     coord.dy = (flying && coord.dy > 0 ? 0 : coord.dy)
-    // coord.dy = (coord.dy + 0.15 > 10 ? 10 : (coord.dy > 0 ? coord.dy + 0.15 : coord.dy + 0.2))
   } else {
-    // coord.dy = calculateDy((plat_touched ? plat_touched.y : height - 100), height - 460)
     if (doo.life !== 0) {
       if (coord.dy > 0) {
         coord.dy = -9
@@ -181,7 +178,7 @@ export const step = (state: State) => {
     if (collid_ennemis(state.scroll, state.doodle.coord, ennemi, i, state)) {
       touched = true;
       state.scroll.id_touched_ennemi = i;
-      state.ennemies[i].dead = true; // psq il meurt, permet d'afficher les stars dans le renderer
+      state.ennemies[i].dead = true;
     } else {
       if (state.doodle.life === 0) {
         state.doodle.coord.dy = 1
@@ -207,11 +204,7 @@ export const step = (state: State) => {
       }
     })
   }
-
-  // FIXME pq && state.scroll.savedDy/2 > state.doodle.coord.dy) ? 
-  // if (state.scroll.id_touched != -1 && state.scroll.savedDy / 2 < state.doodle.coord.dy + 0.15) { // && state.scroll.savedDy/2 > state.doodle.coord.dy) {
-  // }
-
+  
   state.balls = iterateOnBalls(state.balls)
   state.scroll = iterateOnPlatforms(state.scroll, state.platforms, state.size.height, state.ennemies, state)
   let [balls, enn, scroll] = iterateOnEnnemis(state.scroll, state.ennemies, state.size.height, state.balls)

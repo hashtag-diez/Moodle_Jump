@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState } from 'react'
-import Loader from './components/loader'
 import Canvas from './components/canvas'
 import './App.css'
 
@@ -20,7 +19,7 @@ const App = () => {
   })
   return (
     <div className="App" ref={container}>
-      {size ? <Canvas {...size} /> : <Loader />}
+      {size ? <Canvas {...size} /> : ""}
     </div>
   )
 }
