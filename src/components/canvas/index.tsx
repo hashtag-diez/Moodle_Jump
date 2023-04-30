@@ -140,25 +140,6 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       setShowCollisions();
     }
   };
-  // async function handleClick(event: MouseEvent) {
-  //   const x = event.clientX;
-  //   const y = event.clientY;
-
-  //   if (state.current.view === "Accueil") {
-  //     if (x >= 965 && x <= 1180 && y >= 640 && y <= 720) {
-  //       setPlayClicked();
-  //       await wait(100);
-  //       state.current.view = "InGame";
-  //     }
-  //   }
-
-  //   if (state.current.view === "GameOver") {
-  //     if (x >= 865 && x <= 1085 && y >= 695 && y <= 770) {
-  //       await wait(100);
-  //       alert("comment reinitialiser tout mdr?");
-  //     }
-  //   }
-  // }
   useEffect(() => {
     if (ref.current) {
       initCanvas(iterate)(ref.current);
@@ -167,21 +148,19 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       ref.current.addEventListener("keyup", onStop);
       ref.current.addEventListener("keyup", onStopShoot);
       ref.current.addEventListener("keydown", onCollisions);
-      // ref.current.addEventListener("click", handleClick);
     }
     return () => {
       ref.current.removeEventListener("click", onMove);
       ref.current.removeEventListener("mousemove", onMove);
-      // ref.current.removeEventListener("click", handleClick);
     };
   }, []);
   return (
-    <>
+    <div style={{position: "relative", width: `${width}px`, height: `${height}px`}}>
       {state.current.view == "GameOver" ? (
         <button
           onClick={() => handleRestart()}
           className="invisible"
-          style={{ top: `${height - 200}px`, left: `${width + 140}px` }}
+          style={{ top: `${height - 200}px`, left: `${width -340}px` }}
         ></button>
       ) : (
         ""
@@ -190,13 +169,13 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
         <button
           onClick={() => handleRestart()}
           className="invisible"
-          style={{ top: `${height - 250}px`, left: `${width + 250}px` }}
+          style={{ top: `${height - 250}px`, left: `${width-240}px`}}
         ></button>
       ) : (
         ""
       )}
       <canvas height={height} width={width} ref={ref} tabIndex={1} />
-    </>
+    </div>
   );
 };
 
