@@ -54,7 +54,7 @@ const Canvas = ({ height, width }: { height: number; width: number }) => {
       doScroll: false,
       savedDy: 0,
     },
-    seed: 5,
+    seed: 0,
     size: { height, width },
     platforms: new Array(50).fill(0).map((v, i) => {
       if (i > 2) {

@@ -399,14 +399,14 @@ export const render_game_over = (ctx: CanvasRenderingContext2D) => (state: State
   ctx.fillStyle = "black"
   ctx.fillText("" + state.scroll.id_touched, state.size.width / 2 - 25, state.size.height / 2 - 50)
 
-  ctx.font = "bold 30px Monospace"
-  if (state.scroll.id_touched <= 99) {
-    ctx.fillText("(un peu nul quoi)", state.size.width / 2 - 150, state.size.height / 2 + 200)
-  } else if (state.scroll.id_touched <= 300) {
-    ctx.fillText("(pas mal)", state.size.width / 2 - 75, state.size.height / 2 + 200)
-  } else if (state.scroll.id_touched > 300) {
-    ctx.fillText("(gg)", state.size.width / 2 - 25, state.size.height / 2 + 200)
-  }
+  // ctx.font = "bold 30px Monospace"
+  // if (state.scroll.id_touched <= 99) {
+  //   ctx.fillText("(un peu nul quoi)", state.size.width / 2 - 150, state.size.height / 2 + 200)
+  // } else if (state.scroll.id_touched <= 300) {
+  //   ctx.fillText("(pas mal)", state.size.width / 2 - 75, state.size.height / 2 + 200)
+  // } else if (state.scroll.id_touched > 300) {
+  //   ctx.fillText("(gg)", state.size.width / 2 - 25, state.size.height / 2 + 200)
+  // }
 
   state.doodle.coord.y = state.doodle.coord.y + state.doodle.coord.dy
   drawDoodle(ctx, state.doodle.coord, true)
@@ -426,7 +426,7 @@ export const render_game_over = (ctx: CanvasRenderingContext2D) => (state: State
 
 export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   // Doodle outside 
-  if (state.doodle.coord.y + 20 >= state.size.height) {
+  if (state.doodle.coord.y + 40 >= state.size.height) {
     state.doodle.life = 0;
     state.doodle.coord = { x: state.size.width / 2, y: 0, dx: 0, dy: 3 }
     state.view = "GameOver"
@@ -490,17 +490,22 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
   // drawEvent(ctx, state.seed);
   if (state.scroll.id_touched >= state.platforms.length - 50) {
     let i = 0
-    let lastY = state.platforms[state.platforms.length - 1].coord.y
+    let lastY = 0
+    if (state.ennemies.length >= 1){
+      lastY = state.platforms[state.platforms.length - 1].coord.y <= state.ennemies[state.ennemies.length - 1].y ? state.platforms[state.platforms.length - 1].coord.y : state.ennemies[state.ennemies.length - 1].y
+    } else {
+      lastY = state.platforms[state.platforms.length - 1].coord.y
+    }
     let minX = 60
     let maxX = state.size.width - 60
-    let averageY = 50 + (Math.min(10 * state.seed, 80))
+    let averageY = 50 + (Math.min(10 * state.seed, 170))
     while (i < 50) {
       state.platforms.push({
         hasSpring: Math.floor(Math.random() * 30) > 28 ? true : false,
         coord: {
           x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
           y: lastY - averageY,
-          dx: (state.seed > 2) ? (state.seed > 3 ? (state.seed > 4 ? (i % 5 == 0 ? 1 : 0) : (i % 10 == 0 ? 1 : 0)) : (i % 20 == 0 ? 1 : 0)) : 0,
+          dx: (state.seed > 2) ? (state.seed > 3 ? (state.seed > 4 ? (state.seed > 5 ? (i % 2 == 0 ? 1 : 0) : i % 5 == 0 ? 1 : 0) : (i % 10 == 0 ? 1 : 0)) : (i % 20 == 0 ? 1 : 0)) : 0,
           dy: 0
         }
       })
@@ -514,7 +519,7 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
             dy: 0.5,
             type: Math.floor(Math.random() * (2 - 1 + 1)) + 1
           })
-          lastY = lastY - averageY
+          // lastY = lastY - averageY
         } else if (i % 20 == 0) {
           state.ennemies.push({
             x: Math.floor(Math.random() * (maxX - minX + 1)) + minX,
@@ -523,8 +528,8 @@ export const render = (ctx: CanvasRenderingContext2D) => (state: State) => {
             dy: 0.5,
             type: Math.floor(Math.random() * (2 - 1 + 1)) + 1
           })
-          lastY = lastY - averageY
-        }
+          // lastY = lastY - averageY
+        } 
       }
       i++
     }
